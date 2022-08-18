@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Src;
 
-require_once('RoutesEnum.php');
-
-use RoutesEnum;
+use Src\Models\User;
+use Src\Enums\RoutesEnum;
 use Src\Controllers\ViewController;
 
 class Router
@@ -16,12 +15,19 @@ class Router
     {
     }
 
-    public function resolve(string $path)
+    public function resolve(string $path): void
     {
-        $routes = new RoutesEnum();
-        if ($routes::tryFrom($path)) {
+        if (RoutesEnum::tryFrom($path)) {
+            $enumPath = RoutesEnum::from($path);
+            [$class, $method] = $enumPath->getRouteCallback();
+            $class = new $class();
+            call_user_func([$class, $method]);
+            if ($path === '/') $path = 'homee';
             $view = new ViewController($path);
-            $view->renderView();
+            $view->constructView();
+        } else {
+            $view = new ViewController('_404');
+            $view->constructView();
         }
     }
 }
