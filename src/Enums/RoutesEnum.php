@@ -19,7 +19,7 @@ enum RoutesEnum: string
     case USERPAGE = '/userpage';
     case TEST = '/test';
 
-
+    //Returns an array with the class and method to be run for a given path
     public function getRouteCallback(): array
     {
         return match ($this) {

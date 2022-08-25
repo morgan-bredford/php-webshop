@@ -1,0 +1,5 @@
+.env
+/.vscode
+/vendor
+todo.txt
+junk.txt
