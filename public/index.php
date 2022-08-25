@@ -11,5 +11,7 @@ $router = new Router();
 
 $app = new App($router);
 
+//Run settings before starting main application
 $app->boot();
+//Start the application
 $app->run();
