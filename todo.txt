@@ -1,4 +1,0 @@
-remove item from cookie as well
-no category page
-what am i using id for???
-trim email for cookie doesnt work
