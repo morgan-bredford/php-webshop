@@ -20,26 +20,26 @@
                 <?php
                 if (!isset($_SESSION['user'])) {
                     $login = <<<LOGIN
-                    <a href="/login">
-                        <img src="/images/user.png" class="header_user_image" />
-                        <li class="header_user_text">
-                            logga in
-                        </li>
-                    </a>
-                LOGIN;
+                        <a href="/login">
+                            <img src="/images/user.png" class="header_user_image" />
+                            <li class="header_user_text">
+                                logga in
+                            </li>
+                        </a>
+                    LOGIN;
                     echo $login;
                 } else {
                     $firstname = $_SESSION['user']['firstname'];
                     $userOptions = <<<USEROPTIONS
-                    <a href="/userpage">
-                        <div class="x">
-                            <img src="/images/user.png" class="header_user_image" />
-                        </div>
-                        <li class="header_user_text">
-                            $firstname
-                        </li>
-                    </a>
-                USEROPTIONS;
+                        <a href="/userpage">
+                            <div class="x">
+                                <img src="/images/user.png" class="header_user_image" />
+                            </div>
+                            <li class="header_user_text">
+                                $firstname
+                            </li>
+                        </a>
+                    USEROPTIONS;
                     echo $userOptions;
                 }
                 ?>
