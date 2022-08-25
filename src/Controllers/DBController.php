@@ -6,71 +6,82 @@ namespace Src\Controllers;
 
 class DBController
 {
-    public \PDO $dbConnection;
+    static \PDO $dbConnection;
 
     public function __construct()
     {
         try {
-            $this->dbConnection = new \PDO("mysql:host=$_ENV[DB_HOST];dbname=$_ENV[DB_DATABASE]", "$_ENV[DB_USER]", "$_ENV[DB_PASS]");
+            self::$dbConnection = new \PDO("mysql:host=$_ENV[DB_HOST];dbname=$_ENV[DB_DATABASE]", "$_ENV[DB_USER]", "$_ENV[DB_PASS]");
         } catch (\PDOException $e) {
+            //Renders a 'no connection to database' page if database connection fails
             $viewController = new ViewController('no_db_connection');
             $viewController->constructView();
             exit;
         }
     }
 
+    //Retrieves a user from the database by registered email
     public function getUser(string $email): array
     {
         $query = 'SELECT * FROM wbusers WHERE email = ?';
-        $stmt = $this->dbConnection->prepare($query);
+        $stmt = self::$dbConnection->prepare($query);
         $stmt->execute([$email]);
-        return $stmt->fetchAll()[0];
+        return $stmt->fetch();
     }
 
+    //Search products from user input in the search box
     public function searchProducts(): void
     {
-        if (isset($_GET['searchString'])) $_SESSION['searchString'] = $_GET['searchString'];
-        $searchString = '%' . $_SESSION['searchString'] . '%';
+        //Sets a default searchstring if none is found in the request
+        $search = $_GET['searchString'] ?? 'noSearchValue';
+        $searchString = '%' . $search . '%';
         $query = 'SELECT * FROM wbproducts WHERE name LIKE ?';
-        $stmt = $this->dbConnection->prepare($query);
+        $stmt = self::$dbConnection->prepare($query);
         $stmt->execute([$searchString]);
         $_SESSION['searchProducts'] = $stmt->fetchAll();
     }
 
+    //Retrieves a product from the database by id
     public function getProduct(int|string $id): array
     {
         $query = 'SELECT * FROM wbproducts WHERE id = ?';
-        $stmt = $this->dbConnection->prepare($query);
+        $stmt = self::$dbConnection->prepare($query);
         $stmt->execute([$id]);
         $product = $stmt->fetch();
         return $product;
     }
 
+    //Searches for all products with a certain category specified in the request
     public function getCategoryProducts(): void
     {
-        $category = $_GET['category'];
+        //Sets a default searchstring if none is found in the request
+        /* NOTE: Make a 'category not found page' */
+        $category = $_GET['category'] ?? 'frukt';
         $query = 'SELECT * FROM wbproducts WHERE category = ?';
-        $stmt = $this->dbConnection->prepare($query);
+        $stmt = self::$dbConnection->prepare($query);
         $stmt->execute([$category]);
         $_SESSION['category'] = $stmt->fetchAll();
     }
 
-    public function getRelatedProducts(string $category): array
+    //Searches for products that share category with the product selected for the product page
+    private function getRelatedProducts(string $category): array
     {
         $query = 'SELECT * FROM wbproducts WHERE category = ?';
-        $stmt = $this->dbConnection->prepare($query);
+        $stmt = self::$dbConnection->prepare($query);
         $stmt->execute([$category]);
         return $stmt->fetchAll();
     }
 
-    public function getSellerProducts(string $seller): array
+    //Searches for products that share seller with the product selected for the product page
+    private function getSellerProducts(string $seller): array
     {
         $query = 'SELECT * FROM wbproducts WHERE seller = ?';
-        $stmt = $this->dbConnection->prepare($query);
+        $stmt = self::$dbConnection->prepare($query);
         $stmt->execute([$seller]);
         return $stmt->fetchAll();
     }
 
+    //Makes database requests for the content to be displayed on the product page of the selected product
     public function createProductPage(): void
     {
         $id = $_GET['id'];
@@ -79,26 +90,28 @@ class DBController
         $_SESSION['seller_products'] = $this->getSellerProducts(seller: $_SESSION['product']['seller']);
     }
 
-    public function addUser(string $email, string $password, string $firstname, string $lastname): void
+    //Registers a new user in the database
+    public function addUser(string $email, string $password, string $firstname, string $lastname): array
     {
         $query = 'INSERT INTO wbusers (email, password, firstname, lastname) VALUES(?, ?, ?, ?)';
-        $stmt = $this->dbConnection->prepare($query);
+        $stmt = self::$dbConnection->prepare($query);
         $stmt->execute([$email, $password, $firstname, $lastname]);
+        //Request for what id the added user was given
         $query2 = 'SELECT LAST_INSERT_ID() as id';
-        $stmt2 = $this->dbConnection->query($query2);
+        $stmt2 = self::$dbConnection->query($query2);
         $id = $stmt2->fetch()['id'];
-        $user = ['id' => $id, 'email' => $email, 'firstname' => $firstname, 'lastname' => $lastname];
-        $userController = new UserController();
-        $userController->setActiveUser($user);
+        return ['id' => $id, 'email' => $email, 'firstname' => $firstname, 'lastname' => $lastname];
     }
 
+    //Updates the information of a user in the database
     public function update(array $user): void
     {
         $query = 'UPDATE wbusers SET email = ?, firstname = ?, lastname = ? WHERE id = ?';
-        $stmt = $this->dbConnection->prepare($query);
+        $stmt = self::$dbConnection->prepare($query);
         $stmt->execute([$user['email'], $user['firstname'], $user['lastname'], $user['id']]);
     }
 
+    //Gets a random product to be displayed on the home page
     public function home(): void
     {
         $id = rand(1, 34);

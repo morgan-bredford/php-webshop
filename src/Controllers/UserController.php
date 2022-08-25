@@ -32,7 +32,7 @@ class UserController
         }
     }
 
-    public function setActiveUser(array $user): void
+    private function setActiveUser(array $user): void
     {
         $_SESSION['user'] = $user;
         $_SESSION['cart'] = [];
@@ -43,7 +43,7 @@ class UserController
         }
     }
 
-    public function loggedIn(): bool
+    private function loggedIn(): bool
     {
         return isset($_SESSION['user']);
     }
@@ -86,13 +86,14 @@ class UserController
         if (!empty($_POST)) {
             extract($_POST, EXTR_SKIP);
             $hashpassword = password_hash($password, PASSWORD_DEFAULT);
-            $this->dbController->addUser(
+            $user = $this->dbController->addUser(
                 email: $email,
                 password: $hashpassword,
                 firstname: $firstname,
                 lastname: $lastname
             );
-            //$this->setActiveUser([]);
+            $this->setActiveUser(user: $user);
+            header('Location: /');
         }
     }
 }

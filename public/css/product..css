@@ -1,7 +1,7 @@
 .product_info {
   display: flex;
   position: relative;
-  width: 75vw;
+  width: 63vw;
   height: max-content;
   margin-bottom: 3vw;
 }
